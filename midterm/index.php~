@@ -363,14 +363,13 @@ window.location.onload=function(){
 				if (empty($chose2))
 					$q2 = ' 1 = 1 ';
 				else{
-					$safe_query = mysqli_real_escape_string($dbc, $_POST['TextBox2']);
+					$safe_query = mysql_real_escape_string($_POST['TextBox2']);
 					$q2 = "$chose2 like '%{$safe_query}%'";
 				}
 				if (empty($chose1))
 					$q1 = ' 1 = 1 ';
 				else{
-					
-					$safe_query = mysqli_real_escape_string($dbc, $_POST['TextBox1']);
+					$safe_query = mysql_real_escape_string($_POST['TextBox1']);
 					$q1 = "$chose1 like '%{$safe_query}%'";
 				}
 				$q = "SELECT * FROM CourseInfo WHERE $q1 and $q2 ;";
