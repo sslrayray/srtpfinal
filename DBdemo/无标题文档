@@ -1,0 +1,23 @@
+4. 修改数据库成utf8的.
+mysql> alter database name character set utf8; 
+
+5. 修改表默认用utf8.
+mysql> alter table type character set utf8; 
+
+6. 修改字段用utf8
+mysql> alter table type modify type_name varchar(50) CHARACTER SET utf8;
+
+CREATE TABLE CourseInfo (
+  jsxm char(50) ,
+  kcdm char(50) ,
+  kcmc char(50) ,
+  kclb char(50) ,
+  zxs char(50) ,
+  xf char(50) ,
+  sksj char(100),
+  skdd char(100) ,
+  xq char(50),
+  PRIMARY KEY (jsxm, kcdm)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+mysql>CREATE DATABASE IF NOT EXISTS my_db default charset utf8 COLLATE utf8_general_ci; 
