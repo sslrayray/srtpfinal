@@ -1,0 +1,9 @@
+<?php
+function insertCourse($stu, $CoCodeList){
+	foreach($CoCodeList as $h => $v){
+		$query = "insert into StuCourse values (\'$stu\',\'$v\');";
+		sqli_query();
+	}
+}
+}
+?>

@@ -1,0 +1,202 @@
+<?php
+	session_start();
+	if (!isset($_SESSION["username"])){
+		header('location: login.php');
+		exit;
+	}	
+
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>课程信息</title>
+
+<script src="wangliang.js"></script>
+</head>
+<body onload="scrollwindow()">
+  <div id="all">     
+     <div id="main">
+	    <form action="new_index_w.php" method="post" style="font-family:幼圆">
+            <input name="TextBox" type="text" id="TextBox" style="width:150px; line-height:25px;" 
+             <?php
+             	if(!empty($_POST['TextBox']))
+             		echo "value=\"" . $_POST['TextBox'] . "\" />";
+             	else
+             		echo " />"; 
+             ?>
+           <p>
+	           	<input type="submit" name="Button5" value="查询教学班" id="Button5" />
+	           	&nbsp;&nbsp;
+	           	<input type="submit" name="generate" value="生成推荐课表" id="generate" />
+	           	&nbsp;&nbsp;
+	           	<span>请先添加必选课程（可选），再点击"生成推荐课表"</span>
+	           	<?php
+	           	echo '<div>
+					  <table>
+					  <thead>
+					  		<tr>
+					  			<td>待选课程</td>
+					  		</tr>
+					  </thead>';
+				require('CheckCourse.php');
+				$ckcs = new CheckCourse();
+				$uname = $_SESSION['username'];
+				$ckcs->check($uname);
+				
+				echo '<tr>
+						 <td>未选必修课代码</td>
+						 <td align="center">课程名称</td>
+					 </tr>';
+				$reCoDmArr = $ckcs->getReCoDmArr();
+				$reCoMcArr = $ckcs->getReCoMcArr();
+				$SeLBMcArr = $ckcs->getSeLBMcArr();
+				$SeXfNeedArr = $ckcs->getSeXfNeedArr();
+				foreach($reCoDmArr as $h => $v){
+					echo '<tr>';
+					echo '<td align="center">'.$v.'</td>';
+					echo '<td align="center">'.$reCoMcArr[$h].'</td>';
+					echo '</tr>';
+				}
+				echo '<tr  style="background-color:#d4e3e5;">
+						 <td align="center">培养方案模块</td>
+						 <td align="center">未选课程信息</td>
+					 </tr>';
+				foreach ($SeLBMcArr as $h => $v){
+					echo '<tr>';
+					echo '<td align="center">'.$v.'</td>';
+					echo '<td align="center">还差 '.$SeXfNeedArr[$h].' 分</td>';
+					echo '</tr>';
+
+				}
+				echo '</table></div>'; 
+				echo '<br/><br/>';
+				echo '<div style="margin-left:10p;width:700px;margin-top:10px" >
+					  <table  width="600px" bordercolor=“#00FFFF" border="1" cellspacing="0px">
+					  <thead>
+					  		<tr style="background-color:#d4e3e5;">
+					  			<td colspan="2" align="center">已添加必选课程</td>
+					  		</tr>
+					  </thead>';
+				echo '<tr style="background-color:#d4e3e5;">
+						 <td align="center">课程名称</td>
+						 <td align="center">课程代码</td>
+					  </tr>';
+				if(!empty($_POST['class_add']))
+				{
+					$cline = 0;
+					$class_add_str = $_POST['class_add'];
+					$CoCodeArr = array(); //course array to be managed
+					while(!empty($class_add_str))
+					{
+						$n1 = strpos($class_add_str, ";");
+						$str1 = substr($class_add_str, 0,$n1);
+						$class_add_str = substr($class_add_str, $n1+1);
+						$n1 = strpos($class_add_str,";");
+						$str2 = substr($class_add_str, 0 , $n1);
+						$class_add_str = substr($class_add_str, $n1+1);
+						//if($cline % 2 == 0)
+						//	echo '<tr class="row2">';
+						//else
+						//	echo '<tr class="row1">';
+						echo '<tr>';
+						echo '<td class="col">' . $str1 . '</td>';
+						echo '<td class="col">' . $str2 . '</td>';
+						echo '</tr>';
+						array_push($CoCodeArr, $str2);
+						//$cline++;
+					}
+					if (isset($_POST['generate'])){
+						require_once('queryCourse.php');
+						$allCourse = getAllCourse($CoCodeArr);
+						$temp = array();
+						$recomCourse = getAllCourse(getRecomCourse($_SESSION['username']));
+						$temp = array_merge($temp, $recomCourse);
+						$_SESSION["Array"] = serialize(array_merge($temp, $allCourse));
+						echo "<script> window.location.href='showtable2.php'</script>";
+						echo 'fff<br>';
+	//					$recomCourse = getAllCourse(getRecomCourse($_SESSION['username']));
+						//$selCourseCode = getSelCourse($_SESSION['username']);
+						//$selCourse = getAllCourse($selCourseCode);
+	//					print_r($allCourse);
+	//					print '<br><br>';
+	//					print_r($recomCourse);
+						//print_r($selCourse);
+
+						exit;
+					}
+				}
+			    echo '</table></div>';
+	           	?>
+           </p>
+ 
+           <?php
+ //          include "CheckCourse.php";
+		if ($_SERVER['REQUEST_METHOD'] == 'POST' ){
+			if (!empty($_POST['TextBox'])){
+				require('../../mysqli_connect.php');
+				$safe_query = mysqli_real_escape_string($dbc, $_POST['TextBox']);
+				$qq = "kcmc like '%{$safe_query}%'";
+				$q = "SELECT * FROM CourseInfo WHERE $qq;";
+				$r = @mysqli_query ($dbc, $q);
+				if ($r){
+					echo '<div style="width:1000px; margin-left:-50px;">';
+					echo '<br />';
+					echo '<br  />';
+					echo '<table border="1px" cellspacing="0" bordercolor="#6699FF" id="ssjg" style="font-family:微软雅黑;">';
+					echo '<tr class="row1" style="font-weight:bold; background-color:#c3dde0;">
+						<td class="col" width="80px">' . '教师姓名' . '</td>
+						<td class="col" width="80px">' . '课程代码' . '</td>
+						<td class="col" width="200px">' . '课程名称' . '</td>
+						<td class="col" width="100px">' . '课程类别' . '</td>
+						<td class="col" width="50px">' . '周学时' . '</td>
+						<td class="col" width="50px">' . '学分' . '</td>
+						<td class="col" width="150px">' . '上课时间' . '</td>
+						<td class="col" width="200px">' . '上课地点' . '</td>
+						<td class="col" width="50px">' . '学期' . '</td>
+						<td class="col" width =100px">' . '添加' . '</td>
+						</tr>';
+					$line = 1;
+					while ($row = mysqli_fetch_array($r, MYSQLI_ASSOC)){
+						if ($line % 2 == 0)
+							echo '<tr class="row1">';
+						else echo '<tr class="row2">';
+						$line = $line +1;
+						echo '
+						<td class="col">' . $row['jsxm'] . '</td>
+						<td class="col">' . $row['kcdm'] . '</td>
+						<td class="col">' . $row['kcmc'] . '</td>
+						<td class="col">' . $row['kclb'] . '</td>
+						<td class="col">' . $row['zxs'] . '</td>
+						<td class="col">' . $row['xf'] . '</td>
+						<td class="col">' . $row['sksj'] . '</td>
+						<td class="col">' . $row['skdd'] . '</td>
+						<td class="col">' . $row['xq'] . '</td>
+						<td class="col">
+						
+								<input type="submit" name="add'. ($line-1) .'" id="add" value="添加" onclick="AddClass(this)"/>
+						</td>
+							
+						</tr>';
+					}
+					echo '</table>';
+					echo '</div>';
+					mysqli_free_result($r);
+				}
+				mysqli_close($dbc);
+			}else{
+				echo "<h1>没有输入</h1>";
+			}
+		}
+		echo '<input type="hidden" id="class_add" name="class_add" ';
+		if(!empty($_POST['class_add']))
+			echo 'value="' . $_POST['class_add'] . '" />';
+		else
+			echo " />";
+	//	echo '<input type="hidden" id="scrollbar" name="scrollbar" ';
+	?>
+	</form>
+     </div>
+  </div>
+</body>
+</html>
